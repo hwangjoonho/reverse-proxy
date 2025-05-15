@@ -160,7 +160,7 @@ pipeline {
                         """
                     }else{
                         sh """
-                            docker-compose -f source/docker-compose-reverse.yml --profile ${FRONT_PROJECT_ENV} up -d 
+                            docker-compose -f source/docker-compose.yml --profile ${FRONT_PROJECT_ENV} up -d 
                         """
                     }
                 }
