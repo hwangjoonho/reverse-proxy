@@ -7,13 +7,10 @@ pipeline {
 
         // GIT 관련 변수 작성 필요
         
-        // GIT_CREDENTIALS_ID = "github-token"
-        // GIT_URL = "github.com/hwangjoonho/Jenkins_front.git" // (http:// 또는 https:// 제거)
-        // BRANCH="master"
+        GIT_CREDENTIALS_ID = "github-token"
+        GIT_URL = "github.com/hwangjoonho/reverse-proxy.git" // (http:// 또는 https:// 제거)
+        BRANCH="master"
 
-        // REVERSE_NGINX_VERSION = "latest"
-        // REVERSE_HOST_PORT = "3049"
-        // REVERSE_CONTAINER_PORT = "80"
     }
     stages {
         stage("Clean"){
