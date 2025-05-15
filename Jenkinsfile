@@ -9,7 +9,7 @@ pipeline {
         
         GIT_CREDENTIALS_ID = "github-token"
         GIT_URL = "github.com/hwangjoonho/reverse-proxy.git" // (http:// 또는 https:// 제거)
-        BRANCH="master"
+        BRANCH="main"
 
     }
     stages {
