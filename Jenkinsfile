@@ -73,7 +73,6 @@ pipeline {
         }
         stage('Print ENV') {
             steps {
-                echo "REVERSE_PROJECT_NAME: ${REVERSE_PROJECT_NAME}"
                 echo "REVERSE_NGINX_VERSION: ${env.REVERSE_NGINX_VERSION}"
                 echo "REVERSE_PROJECT_ENV: ${env.REVERSE_PROJECT_ENV}"
                 echo "FRONT_PROJECT_NAME: ${FRONT_PROJECT_NAME}"
@@ -152,12 +151,12 @@ pipeline {
         stage('Reverse Build') {
             steps {
                 script {
-                // 만약 REVERSE_PROJECT_NAME 도커 이미지가 존재하면
-                    def imageExists = sh(script: "docker images -q ${REVERSE_PROJECT_NAME} | grep -q . && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
+                // 만약 reverse-proxy 도커 이미지가 존재하면
+                    def imageExists = sh(script: "docker images -q reverse-proxy | grep -q . && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
                     if (imageExists == 'FOUND') {
                         sh """
-                            docker restart ${REVERSE_PROJECT_NAME}
+                            docker restart reverse-proxy
                         """
                     }else{
                         sh """
