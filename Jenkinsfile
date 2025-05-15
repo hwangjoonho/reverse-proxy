@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    options {
-        // skipDefaultCheckout()  // 자동 git clone 제거
-    }
+    // options {
+    //     // skipDefaultCheckout()  // 자동 git clone 제거
+    // }
     environment {
 
         // GIT 관련 변수 작성 필요
@@ -149,17 +149,19 @@ pipeline {
         }
         stage('Reverse Build') {
             steps {
+                script {
                 // 만약 REVERSE_PROJECT_NAME 도커 이미지가 존재하면
-                def imageExists = sh(script: "docker images -q ${REVERSE_PROJECT_NAME} | grep -q . && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
+                    def imageExists = sh(script: "docker images -q ${REVERSE_PROJECT_NAME} | grep -q . && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
-                if (imageExists == 'FOUND') {
-                    sh """
-                        docker restart ${REVERSE_PROJECT_NAME}
-                    """
-                }else{
-                    sh """
-                        docker-compose -f source/docker-compose-reverse.yml --profile ${FRONT_PROJECT_ENV} up -d 
-                    """
+                    if (imageExists == 'FOUND') {
+                        sh """
+                            docker restart ${REVERSE_PROJECT_NAME}
+                        """
+                    }else{
+                        sh """
+                            docker-compose -f source/docker-compose-reverse.yml --profile ${FRONT_PROJECT_ENV} up -d 
+                        """
+                    }
                 }
             }
         }
