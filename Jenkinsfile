@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    // options {
-    //     // skipDefaultCheckout()  // 자동 git clone 제거
-    // }
+    options {
+        skipDefaultCheckout()  // 자동 git clone 제거
+    }
     environment {
 
         // GIT 관련 변수 작성 필요
