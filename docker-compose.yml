@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: reverse-proxy-dockerfile
+      args:
+        REVERSE_NGINX_VERSION: "${REVERSE_NGINX_VERSION}"
+        REVERSE_HOST_PORT: "${REVERSE_HOST_PORT}"
+        REVERSE_CONTAINER_PORT: "${REVERSE_CONTAINER_PORT}"
+    image: reverse-proxy
+    container_name: reverse-proxy
+    ports:
+      - "${REVERSE_HOST_PORT}:${REVERSE_CONTAINER_PORT}"
+    volumes:
+      - /usr/local/docker/jenkins/workspace/reverse-proxy/conf.d:/etc/nginx/conf.d:rw
+    profiles: 
+      - "${REVERSE_PROJECT_ENV}"
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+    external: true
+    driver: bridge                       
