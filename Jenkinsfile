@@ -88,12 +88,20 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    def result = sh(script: "grep -q '\\\${params.FRONT_PROJECT_NAME}' conf.d/default.conf && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
+                    def result = sh(script: "docker images --format '{{.Repository}}:{{.Tag}}' | grep -q '${params.FRONT_PROJECT_NAME}' && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
                     def confExists = fileExists("conf.d/default.conf")
 
+                    sh"""
+                    pwd
+                    ls -la
+                    whoami
+                    """
+
+                    
                     if (confExists && result == 'FOUND') {
                         sh """
+                        
 
                             echo "🗂 원래 존재하던 Image , reverse-proxy 컨테이너 변화 없음"
                             echo "🗂 conf.d/default.conf 존재"
