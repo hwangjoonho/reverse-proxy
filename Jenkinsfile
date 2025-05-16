@@ -152,7 +152,8 @@ pipeline {
                             mkdir -p backup || true   
 
                             echo 'server {
-                                listen ${params.REVERSE_CONTAINER_PORT};
+                                listen       80;
+                                listen  [::]:80;
                                 server_name localhost;
                                 location / {
                                     root /usr/share/nginx/html;
