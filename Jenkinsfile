@@ -97,9 +97,11 @@ pipeline {
                     ls -la
                     whoami
                     """
+                    sh '*******************************************'
                     sh "echo confExists: ${confExists}"
                     sh "echo result: \${result}"
-                    
+                    sh '*******************************************'
+
                     if (confExists && result == 'FOUND') {
                         sh """
                         
@@ -109,7 +111,7 @@ pipeline {
 
                         """
                     }
-                    else if (fileExists('conf.d/default.conf') && result == 'NOT_FOUND'){
+                    else if (confExists && result == 'NOT_FOUND'){
     
                             sh """
                                 echo "🗂 backup 디렉토리에 default.conf 파일 존재"
@@ -147,6 +149,8 @@ pipeline {
                             """
                     }   
                     else {
+
+                        sh '처음 시작할때'
 
                         sh """
                             mkdir -p conf.d || true
