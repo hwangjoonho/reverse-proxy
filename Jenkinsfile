@@ -88,7 +88,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    def result = sh(script: "docker images --format '{{.Repository}}:{{.Tag}}' | grep -q '${params.FRONT_PROJECT_NAME}' && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
+                    def result = sh(script: "grep -q '${params.FRONT_PROJECT_NAME}' conf.d/default.conf && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
                     def confExists = fileExists("conf.d/default.conf")
 
