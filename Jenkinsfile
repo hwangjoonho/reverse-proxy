@@ -112,17 +112,19 @@ pipeline {
                         sh """
                             mkdir -p conf.d || true
                             mkdir -p backup || true
-
+                            
                             cat <<EOF > conf.d/default.conf
-                                server {
-                                    listen       80;
-                                    listen  [::]:80;
-                                    server_name localhost;
-                                    location / {
-                                        root /usr/share/nginx/html;
-                                    }
-                                }
-                            EOF
+                        server {
+                            listen       80;
+                            listen  [::]:80;
+                            server_name localhost;  
+                            location / {
+                                root /usr/share/nginx/html;
+                            }
+                        }
+                        EOF
+                        """
+
                         """
                     }
 
@@ -132,15 +134,14 @@ pipeline {
                         sh """
                         
 
-                            echo "🗂 원래 존재하던 Image , reverse-proxy 컨테이너 변화 없음"
-                            echo "🗂 conf.d/default.conf 존재"
+                            echo "🗂 ${params.FRONT_PROJECT_NAME} 존재"
 
                         """
                     }
                     else if (result == 'NOT_FOUND'){
     
                             sh """
-                                echo "🗂 backup 디렉토리에 default.conf 파일 존재"
+                                echo "🗂 default.conf 에 ${params.FRONT_PROJECT_NAME} 존재하지 않음"
 
                                 mkdir -p backup || true
                                 
