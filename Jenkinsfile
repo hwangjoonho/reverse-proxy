@@ -15,7 +15,7 @@ pipeline {
     parameters {
         string(name: 'FRONT_PROJECT_NAME', defaultValue: 'front-project', description: 'Front Project Name')
         string(name: 'FRONT_PROJECT_ENV', defaultValue: 'local', description: 'Front Project Environment')
-        string(name: 'FRONT_PROJECT_CONTAINER_PORT', defaultValue: '8080', description: 'Front Project Container Port')
+        string(name: 'FRONT_PROJECT_CONTAINER_PORT', defaultValue: '80', description: 'Front Project Container Port')
     }   
     stages {
         stage("Clean"){
