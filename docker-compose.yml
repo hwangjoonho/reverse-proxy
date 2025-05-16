@@ -4,7 +4,7 @@ services:
   reverse-proxy:
     build:
       context: .
-      dockerfile: reverse-proxy-dockerfile
+      dockerfile: dockerfile
       args:
         REVERSE_NGINX_VERSION: "${REVERSE_NGINX_VERSION}"
         REVERSE_HOST_PORT: "${REVERSE_HOST_PORT}"
