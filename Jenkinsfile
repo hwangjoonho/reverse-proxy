@@ -75,13 +75,13 @@ pipeline {
             steps {
                 echo "REVERSE_NGINX_VERSION: ${env.REVERSE_NGINX_VERSION}"
                 echo "REVERSE_PROJECT_ENV: ${env.REVERSE_PROJECT_ENV}"
-                echo "FRONT_PROJECT_NAME: ${FRONT_PROJECT_NAME}"
+                echo "FRONT_PROJECT_NAME: ${params.FRONT_PROJECT_NAME}"
             }
         }
         stage('Build') {
             steps {
                 script {
-                    def result = sh(script: "grep -q '\\\${FRONT_PROJECT_NAME}' conf.d/default.conf && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
+                    def result = sh(script: "grep -q '\\\${params.FRONT_PROJECT_NAME}' conf.d/default.conf && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
                     def confExists = fileExists("conf.d/default.conf")
 
@@ -112,8 +112,8 @@ pipeline {
                             }
 
                             configFile += """
-                                location /${FRONT_PROJECT_ENV}/${FRONT_PROJECT_NAME}/ {
-                                    proxy_pass http://${FRONT_PROJECT_NAME}:${FRONT_PROJECT_CONTAINER_PORT};
+                                location /${params.FRONT_PROJECT_ENV}/${params.FRONT_PROJECT_NAME}/ {
+                                    proxy_pass http://${params.FRONT_PROJECT_NAME}:${params.FRONT_PROJECT_CONTAINER_PORT};
                                     proxy_set_header Host \$host;
                                     proxy_set_header X-Real-IP \$remote_addr;
                                     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -137,7 +137,7 @@ pipeline {
                             mkdir -p backup || true   
 
                             echo 'server {
-                                listen ${FRONT_PROJECT_CONTAINER_PORT};
+                                listen ${params.FRONT_PROJECT_CONTAINER_PORT};
                                 server_name localhost;
                                 location / {
                                     root /usr/share/nginx/html;
@@ -160,7 +160,7 @@ pipeline {
                         """
                     }else{
                         sh """
-                            docker-compose -f source/docker-compose.yml --profile ${FRONT_PROJECT_ENV} up -d 
+                            docker-compose -f source/docker-compose.yml --profile ${params.FRONT_PROJECT_ENV} up -d 
                         """
                     }
                 }
