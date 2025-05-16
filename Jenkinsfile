@@ -97,7 +97,8 @@ pipeline {
                     ls -la
                     whoami
                     """
-
+                    sh 'echo confExists: ${confExists}'
+                    sh 'echo result: ${result}'
                     
                     if (confExists && result == 'FOUND') {
                         sh """
@@ -172,7 +173,7 @@ pipeline {
 
                     if (imageExists == 'FOUND') {
                         sh """
-                            docker restart reverse-proxy
+                            docker restart reverse-proxy || true
                         """
                     }else{
                         sh """
