@@ -102,7 +102,33 @@ pipeline {
                     sh "echo result: ${result}"
                     sh 'echo *******************************************'
 
-                    if (confExists && result == 'FOUND') {
+
+                    // default.conf 존재 여부에 따른 조건
+                    if(confExists) {
+                        sh 'echo conf.d/default.conf 존재'
+                    } else {
+                        sh 'echo conf.d/default.conf 존재하지 않음'
+
+                        sh """
+                            mkdir -p conf.d || true
+                            mkdir -p backup || true
+
+                            cat <<EOF > conf.d/default.conf
+                                server {
+                                    listen       80;
+                                    listen  [::]:80;
+                                    server_name localhost;
+                                    location / {
+                                        root /usr/share/nginx/html;
+                                    }
+                                }
+                            EOF
+                        """
+                    }
+
+
+                    // default.conf 에 ${params.FRONT_PROJECT_NAME} 존재 여부에 따른 조건
+                    if (result == 'FOUND') {
                         sh """
                         
 
@@ -111,7 +137,7 @@ pipeline {
 
                         """
                     }
-                    else if (confExists && result == 'NOT_FOUND'){
+                    else if (result == 'NOT_FOUND'){
     
                             sh """
                                 echo "🗂 backup 디렉토리에 default.conf 파일 존재"
@@ -148,27 +174,6 @@ pipeline {
                                 mv backup/default.conf backup/default.conf_\${timestamp} || true
                             """
                     }   
-                    else {
-
-                        sh 'echo 처음 시작할때'
-
-                        sh """
-                            mkdir -p conf.d || true
-                            mkdir -p backup || true
-
-                            cat <<EOF > conf.d/default.conf
-                                server {
-                                    listen       80;
-                                    listen  [::]:80;
-                                    server_name localhost;
-                                    location / {
-                                        root /usr/share/nginx/html;
-                                    }
-                                }
-                            EOF
-                        """
-
-                    }
                 } 
             }
         }
