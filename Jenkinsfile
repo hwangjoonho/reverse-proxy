@@ -150,21 +150,22 @@ pipeline {
                     }   
                     else {
 
-                        sh '처음 시작할때'
-
                         sh """
                             mkdir -p conf.d || true
-                            mkdir -p backup || true   
+                            mkdir -p backup || true
 
-                            echo 'server {
-                                listen       80;
-                                listen  [::]:80;
-                                server_name localhost;
-                                location / {
-                                    root /usr/share/nginx/html;
+                            cat <<EOF > conf.d/default.conf
+                                server {
+                                    listen       80;
+                                    listen  [::]:80;
+                                    server_name localhost;
+                                    location / {
+                                        root /usr/share/nginx/html;
+                                    }
                                 }
-                            }' > conf.d/default.conf
+                            EOF
                         """
+
                     }
                 } 
             }
