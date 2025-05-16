@@ -97,8 +97,8 @@ pipeline {
                     ls -la
                     whoami
                     """
-                    sh 'echo confExists: ${confExists}'
-                    sh 'echo result: ${result}'
+                    sh "echo confExists: ${confExists}"
+                    sh "echo result: \${result}"
                     
                     if (confExists && result == 'FOUND') {
                         sh """
