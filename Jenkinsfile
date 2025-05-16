@@ -97,10 +97,10 @@ pipeline {
                     ls -la
                     whoami
                     """
-                    sh '*******************************************'
+                    sh 'echo *******************************************'
                     sh "echo confExists: ${confExists}"
-                    sh "echo result: \${result}"
-                    sh '*******************************************'
+                    sh "echo result: ${result}"
+                    sh 'echo *******************************************'
 
                     if (confExists && result == 'FOUND') {
                         sh """
@@ -149,6 +149,8 @@ pipeline {
                             """
                     }   
                     else {
+
+                        sh 'echo 처음 시작할때'
 
                         sh """
                             mkdir -p conf.d || true
