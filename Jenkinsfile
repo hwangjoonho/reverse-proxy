@@ -114,17 +114,15 @@ pipeline {
                             mkdir -p backup || true
                             
                             cat <<EOF > conf.d/default.conf
-server {
-    listen       80;
-    listen  [::]:80;
-    server_name localhost;  
-    location / {
-        root /usr/share/nginx/html;
-    }
-}
-EOF
-                        """
-
+                        server {
+                            listen       80;
+                            listen  [::]:80;
+                            server_name localhost;  
+                            location / {
+                                root /usr/share/nginx/html;
+                            }
+                        }
+                        EOF
                         """
                     }
 
@@ -132,43 +130,48 @@ EOF
                     // default.conf 에 ${params.FRONT_PROJECT_NAME} 존재 여부에 따른 조건
                     if (result == 'FOUND') {
                         sh """
+                        
+
                             echo "🗂 params.FRONT_PROJECT_NAME 존재"
+
                         """
                     }
-                    else if (result == 'NOT_FOUND') {
-                        sh """
-                            echo "🗂 default.conf 에 params.FRONT_PROJECT_NAME 존재하지 않음"
+                    else if (result == 'NOT_FOUND'){
+    
+                            sh """
+                                echo "🗂 default.conf 에 params.FRONT_PROJECT_NAME 존재하지 않음"
 
-                            mkdir -p backup || true
-                            
-                            mv conf.d/default.conf backup/default.conf || true
-                        """
+                                mkdir -p backup || true
+                                
+                                mv conf.d/default.conf backup/default.conf || true
+                            """
 
-                        // 기존 default.conf 읽기
-                        def configFile = readFile 'backup/default.conf'
+                            // 기존 default.conf 읽기
+                            def configFile = readFile 'backup/default.conf'
 
-                        // 마지막 중괄호 `}` 제거
-                        if (configFile.trim().endsWith("}")) {
-                            configFile = configFile.trim()[0..-2].trim()  
-                        }
-
-                        configFile += """
-                            location /${params.FRONT_PROJECT_ENV}/${params.FRONT_PROJECT_NAME}/ {
-                                proxy_pass http://${params.FRONT_PROJECT_NAME}:${params.FRONT_PROJECT_CONTAINER_PORT}/;
-                                proxy_set_header Host \$host;
-                                proxy_set_header X-Real-IP \$remote_addr;
-                                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                            // 마지막 중괄호 `}` 제거
+                            if (configFile.trim().endsWith("}")) {
+                                configFile = configFile.trim()[0..-2].trim()  
                             }
-                        }
-                        """  
 
-                        // 변경된 내용 저장
-                        writeFile file: 'conf.d/default.conf', text: configFile
+                            configFile += """
+                                location /${params.FRONT_PROJECT_ENV}/${params.FRONT_PROJECT_NAME}/ {
+                                    proxy_pass http://${params.FRONT_PROJECT_NAME}:${params.FRONT_PROJECT_CONTAINER_PORT}/;
+                                    proxy_set_header Host \$host;
+                                    proxy_set_header X-Real-IP \$remote_addr;
+                                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                                }
+                            }
+                            """  
 
-                        sh """
-                            timestamp=\$(date +'%Y%m%d%H%M%S')
-                            mv backup/default.conf backup/default.conf_\${timestamp} || true
-                        """
+                            // 변경된 내용 저장
+                            writeFile file: 'conf.d/default.conf', text: configFile
+
+                            sh """
+                                timestamp=\$(date +'%Y%m%d%H%M%S')
+
+                                mv backup/default.conf backup/default.conf_\${timestamp} || true
+                            """
                     }   
                 } 
             }
