@@ -12,6 +12,11 @@ pipeline {
         BRANCH="main"
 
     }
+    parameters {
+        string(name: 'FRONT_PROJECT_NAME', defaultValue: 'front-project', description: 'Front Project Name')
+        string(name: 'FRONT_PROJECT_ENV', defaultValue: 'local', description: 'Front Project Environment')
+        string(name: 'FRONT_PROJECT_CONTAINER_PORT', defaultValue: '8080', description: 'Front Project Container Port')
+    }   
     stages {
         stage("Clean"){
             steps {
@@ -76,6 +81,8 @@ pipeline {
                 echo "REVERSE_NGINX_VERSION: ${env.REVERSE_NGINX_VERSION}"
                 echo "REVERSE_PROJECT_ENV: ${env.REVERSE_PROJECT_ENV}"
                 echo "FRONT_PROJECT_NAME: ${params.FRONT_PROJECT_NAME}"
+                echo "FRONT_PROJECT_ENV: ${params.FRONT_PROJECT_ENV}"
+                echo "FRONT_PROJECT_CONTAINER_PORT: ${params.FRONT_PROJECT_CONTAINER_PORT}"
             }
         }
         stage('Build') {
