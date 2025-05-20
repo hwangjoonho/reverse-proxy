@@ -176,28 +176,22 @@ pipeline {
                 script {
                     // Extract proxy_pass hosts using awk
                     def reverse_hosts = sh(
-                        script: '''
-                            awk '/proxy_pass/ {
-                                gsub(";", "", $0)
-                                match($0, /http:\/\/([^:/]+)/, a)
-                                if (a[1] != "") print a[1]
-                            }' default.conf | sort | uniq
-                        ''',
+                        script: "awk '/proxy_pass/ { gsub(\";\", \"\", \$0); match(\$0, /http:\\/\\/([^:/]+)/, a); print a[1] }' default.conf | sort | uniq",
                         returnStdout: true
                     ).trim().split("\n")
 
-                    echo "Hosts found: ${reverse_hosts}"
+
+                    echo "Hosts found: ${reverse_hosts.join(', ')}"
 
                     // Check and start containers for each host
                     reverse_hosts.each { host ->
                         echo "Checking Docker container for host: ${host}"
-                        
-                        // Check if container exists and is running
+
                         def containerStatus = sh(
                             script: "docker ps -a --format '{{.Names}}' | grep -w '${host}' || true",
                             returnStdout: true
                         ).trim()
-                        
+
                         def isRunning = sh(
                             script: "docker ps --format '{{.Names}}' | grep -w '${host}' || true",
                             returnStdout: true
@@ -207,16 +201,15 @@ pipeline {
                             echo "Container running for host: ${host}"
                         } else if (containerStatus) {
                             echo "Container exists but not running for host: ${host}"
-                            sh "docker start ${host}"
+                            sh "docker start \"${host}\""
                         } else {
                             echo "No container found for host: ${host}"
-                            sh "docker run -d --name ${host} alpine sleep infinity"
+                            sh "docker run -d --name \"${host}\" alpine sleep infinity"
                         }
                     }
                 }
             }
         }
-        
         stage('Reverse Build') {
             steps {
                 script {
