@@ -176,9 +176,16 @@ pipeline {
                 script {
                     // Extract proxy_pass hosts using awk
                     def reverse_hosts = sh(
-                        script: "awk '/proxy_pass/ { gsub(\";\", \"\", \$0); match(\$0, /http:\\/\\/([^:/]+)/, a); print a[1] }' default.conf | sort | uniq",
+                        script: '''
+                            awk '/proxy_pass/ { 
+                                gsub(";", "", $0); 
+                                match($0, /http:\\/\\/([^:/]+)/, a); 
+                                print a[1] 
+                            }' default.conf | sort | uniq
+                        ''',
                         returnStdout: true
                     ).trim().split("\n")
+
 
                     echo "Reverse hosts:\n${reverse_hosts.join('\n')}"
 
