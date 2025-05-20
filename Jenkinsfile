@@ -180,11 +180,15 @@ pipeline {
                         returnStdout: true
                     ).trim().split("\n")
 
-
-                    echo "Hosts found: ${reverse_hosts.join(', ')}"
+                    echo "Reverse hosts:\n${reverse_hosts.join('\n')}"
 
                     // Check and start containers for each host
                     reverse_hosts.each { host ->
+                        if (!host?.trim()) {
+                            echo "Skipping empty host name"
+                            return
+                        }
+                        
                         echo "Checking Docker container for host: ${host}"
 
                         def containerStatus = sh(
@@ -201,10 +205,10 @@ pipeline {
                             echo "Container running for host: ${host}"
                         } else if (containerStatus) {
                             echo "Container exists but not running for host: ${host}"
-                            sh "docker start \"${host}\""
+                            sh "docker start '${host}'"
                         } else {
                             echo "No container found for host: ${host}"
-                            sh "docker run -d --name \"${host}\" alpine sleep infinity"
+                            sh "docker run -d --name '${host}' alpine sleep infinity"
                         }
                     }
                 }
