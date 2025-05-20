@@ -6,10 +6,7 @@ pipeline {
     environment {
 
         // GIT 관련 변수 작성 필요
-        
         GIT_CREDENTIALS_ID = "github-token"
-        GIT_URL = "github.com/hwangjoonho/reverse-proxy.git" // (http:// 또는 https:// 제거)
-        BRANCH="main"
 
     }
     parameters {
@@ -34,14 +31,17 @@ pipeline {
                         echo "Workspace: ${WORKSPACE}"
                             
                         sh 'pwd'
-                        
-                        try {
-                        echo 'Git Clone'    
-                        git credentialsId: "${GIT_CREDENTIALS_ID}", url: "http://${GIT_URL}", branch: "${BRANCH}", poll: true, changelog: true
-                            }
-                        catch(Exception e) {
-                            currentBuild.result = 'FAILURE'
-                        }
+
+                         // scm 객체에서 url, branch 추출
+                        def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
+                        def scmBranch = scm.getBranches()[0].getName()
+
+                        // 디버깅 출력 (선택)
+                        echo "URL from SCM: ${scmUrl}"
+                        echo "Branch from SCM: ${scmBranch}"
+
+                        // git step 호출
+                        git credentialsId: "${env.GIT_CREDENTIALS_ID}", url: scmUrl, branch: scmBranch
                     }
                 }
             }
@@ -97,10 +97,8 @@ pipeline {
                     ls -la
                     whoami
                     """
-                    sh 'echo *******************************************'
                     sh "echo confExists: ${confExists}"
                     sh "echo result: ${result}"
-                    sh 'echo *******************************************'
 
 
                     // default.conf 존재 여부에 따른 조건
@@ -173,6 +171,40 @@ pipeline {
                 } 
             }
         }
+        stage('Start Empty Container') {
+            steps {
+                script {
+                    // awk 명령어로 proxy_pass 호스트 리스트 추출
+                    def reverse_hosts = sh(
+                        script: "awk '/proxy_pass/ { gsub(\";\", \"\", \$0); match(\$0, /http:\\/\\/([^:/]+)/, a); print a[1] }' default.conf | sort | uniq",
+                        returnStdout: true
+                    ).trim().split("\n")
+
+                    echo "Hosts found: ${reverse_hosts}"
+
+                    // 각 호스트에 대해 도커 컨테이너 실행 여부 확인
+                    reverse_hosts.each { host ->
+                        echo "Checking Docker container for host: ${host}"
+
+                        // docker ps 명령어로 실행중인 컨테이너 중 이름이나 이미지에 호스트명 포함 여부 확인
+                        def isRunning = sh(
+                            script: "docker ps --format '{{.Names}} {{.Image}}' | grep -w '${host}' || true",
+                            returnStdout: true
+                        ).trim()
+
+                        if (isRunning) {
+                            echo "Container running for host: ${host}"
+                        } else {
+                            echo "No running container found for host: ${host}"
+
+                            sh "docker run -d --name ${host} alpine sleep infinity"
+
+                        }
+                    }
+                }
+            }
+        }
+        
         stage('Reverse Build') {
             steps {
                 script {
