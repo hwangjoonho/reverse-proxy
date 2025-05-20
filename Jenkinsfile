@@ -174,31 +174,43 @@ pipeline {
         stage('Start Empty Container') {
             steps {
                 script {
-                    // awk 명령어로 proxy_pass 호스트 리스트 추출
+                    // Extract proxy_pass hosts using awk
                     def reverse_hosts = sh(
-                        script: "awk '/proxy_pass/ { gsub(\";\", \"\", \$0); match(\$0, /http:\\/\\/([^:/]+)/, a); print a[1] }' default.conf | sort | uniq",
+                        script: '''
+                            awk '/proxy_pass/ {
+                                gsub(";", "", $0)
+                                match($0, /http:\/\/([^:/]+)/, a)
+                                if (a[1] != "") print a[1]
+                            }' default.conf | sort | uniq
+                        ''',
                         returnStdout: true
                     ).trim().split("\n")
 
                     echo "Hosts found: ${reverse_hosts}"
 
-                    // 각 호스트에 대해 도커 컨테이너 실행 여부 확인
+                    // Check and start containers for each host
                     reverse_hosts.each { host ->
                         echo "Checking Docker container for host: ${host}"
-
-                        // docker ps 명령어로 실행중인 컨테이너 중 이름이나 이미지에 호스트명 포함 여부 확인
+                        
+                        // Check if container exists and is running
+                        def containerStatus = sh(
+                            script: "docker ps -a --format '{{.Names}}' | grep -w '${host}' || true",
+                            returnStdout: true
+                        ).trim()
+                        
                         def isRunning = sh(
-                            script: "docker ps --format '{{.Names}} {{.Image}}' | grep -w '${host}' || true",
+                            script: "docker ps --format '{{.Names}}' | grep -w '${host}' || true",
                             returnStdout: true
                         ).trim()
 
                         if (isRunning) {
                             echo "Container running for host: ${host}"
+                        } else if (containerStatus) {
+                            echo "Container exists but not running for host: ${host}"
+                            sh "docker start ${host}"
                         } else {
-                            echo "No running container found for host: ${host}"
-
+                            echo "No container found for host: ${host}"
                             sh "docker run -d --name ${host} alpine sleep infinity"
-
                         }
                     }
                 }
