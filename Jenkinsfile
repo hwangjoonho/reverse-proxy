@@ -88,6 +88,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+
+                    // default.conf 에 ${params.FRONT_PROJECT_NAME} 존재 여부에 따른 조건
                     def result = sh(script: "grep -q '${params.FRONT_PROJECT_NAME}' conf.d/default.conf && echo 'FOUND' || echo 'NOT_FOUND'", returnStdout: true).trim()
 
                     def confExists = fileExists("conf.d/default.conf")
@@ -174,20 +176,28 @@ pipeline {
         stage('Start Empty Container') {
             steps {
                 script {
-                    // Extract proxy_pass hosts using awk
+
                     def reverse_hosts = sh(
-                        script: '''
-                            awk '/proxy_pass/ { 
-                                gsub(";", "", $0); 
-                                match($0, /http:\\/\\/([^:/]+)/, a); 
-                                print a[1] 
-                            }' default.conf | sort | uniq
-                        ''',
+                        script: """grep -oP 'proxy_pass\\s+\\Khttp[s]?://[^/;]+' conf.d/default.conf | sed -E 's|^http[s]?://([^:/]+).*|\\1|' | sort | uniq""",
                         returnStdout: true
-                    ).trim().split("\n")
+                    ).trim().split("\\n")
+
+                    echo "Hosts found: ${reverse_hosts.join(', ')}"
+
+                    
+                    // def reverse_hosts = sh(
+                    //     script: '''
+                    //         awk '/proxy_pass/ { 
+                    //             gsub(";", "", $0); 
+                    //             match($0, /http:\\/\\/([^:/]+)/, a); 
+                    //             print a[1] 
+                    //         }' default.conf | sort | uniq
+                    //     ''',
+                    //     returnStdout: true
+                    // ).trim().split("\n")
 
 
-                    echo "Reverse hosts:\n${reverse_hosts.join('\n')}"
+                    // echo "Reverse hosts:\n${reverse_hosts.join('\n')}"
 
                     // Check and start containers for each host
                     reverse_hosts.each { host ->
