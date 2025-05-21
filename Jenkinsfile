@@ -240,10 +240,12 @@ pipeline {
                     if (imageExists == 'FOUND') {
                         sh """
                             docker restart reverse-proxy || true
+                            sleep 5
                         """
                     }else{
                         sh """
                             docker-compose -f source/docker-compose.yml --profile ${params.FRONT_PROJECT_ENV} up -d 
+                            sleep 5
                         """
                     }
                 }
