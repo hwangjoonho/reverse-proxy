@@ -225,7 +225,8 @@ pipeline {
                             sh "docker start '${host}'"
                         } else {
                             echo "No container found for host: ${host}"
-                            sh "docker run -d --name '${host}' alpine sleep infinity"
+                            sh "docker run -d --name '${host}' --network dev-net alpine sleep infinity"
+
                         }
                     }
                 }
